@@ -1,5 +1,7 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Get, Post, UsePipes } from "@nestjs/common";
 import { AuthenticationService } from "../service/authentication.service";
+import { ZodValidationPipe } from "src/common/pipe/zod-validation.pipe";
+import { ZaloTokenDtoRequest, ZaloTokenDtoRequestSchema } from "../dto/zalo-token.dto.request";
 
 @Controller('auth')
 export class AuthenticationController {
@@ -8,11 +10,8 @@ export class AuthenticationController {
     ) { }
 
     @Post('zalo-login')
-    async zaloUserLogIn(@Body() { accessToken }: any): Promise<{ username, fullname } | null> {
-        const data = await this.authService.zaloUserLogIn(accessToken);
-        return {
-            username: data.id,
-            fullname: data.name,
-        };
+    @UsePipes(new ZodValidationPipe(ZaloTokenDtoRequestSchema))
+    async zaloUserLogIn(@Body() zaloTokenDtoRequest: ZaloTokenDtoRequest): Promise<{ accessToken: string }> {
+        return await this.authService.loginUser(zaloTokenDtoRequest.zaloAccessToken);
     }
 }

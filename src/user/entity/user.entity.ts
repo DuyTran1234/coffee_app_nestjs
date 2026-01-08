@@ -16,4 +16,7 @@ export class User {
 
     @Column({ name: 'phone_number', nullable: true, unique: true })
     phoneNumber: string;
+
+    @Column({ name: 'role' })
+    role: string;
 }

@@ -15,7 +15,7 @@ export class ZodValidationPipe implements PipeTransform {
             }
             return parsedValue;
         } catch (error) {
-            throw new BadRequestException(error?.issue[0] || 'ZodValidationPipe error');
+            throw new BadRequestException(error || 'ZodValidationPipe error');
         }
     }
 }

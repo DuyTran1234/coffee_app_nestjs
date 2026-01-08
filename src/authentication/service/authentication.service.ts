@@ -1,12 +1,17 @@
-import { BadRequestException, HttpException, Injectable } from "@nestjs/common";
+import { BadRequestException, HttpException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { UserService } from "src/user/service/user.service";
+import { CreateUserDtoRequest } from "src/user/dto/request/create-user.dto.request";
+import { JwtService } from "@nestjs/jwt";
+import { AccountJwt } from "../entity/account-jwt.entity";
 
 @Injectable()
 export class AuthenticationService {
     constructor(
-
+        private userService: UserService,
+        private jwtService: JwtService,
     ) { }
 
-    async zaloUserLogIn(accessToken: string) {
+    async handleZaloAccessToken(accessToken: string): Promise<{ username: string, fullname: string }> {
         const res = await fetch('https://graph.zalo.me/v2.0/me', {
             method: 'GET',
             headers: {
@@ -21,6 +26,25 @@ export class AuthenticationService {
         if (data.error != 0) {
             throw new BadRequestException('access_token zalo invalid');
         }
-        return data;
+        return {
+            username: data.id,
+            fullname: data.name,
+        };
+    }
+
+    async loginUser(accessToken: string): Promise<{ accessToken: string }> {
+        const zaloUser = await this.handleZaloAccessToken(accessToken) as CreateUserDtoRequest;
+        const user = await this.userService.createUser(zaloUser);
+        if (!user) {
+            throw new UnauthorizedException('login user error');
+        }
+        const payload = {
+            id: user.id,
+            username: user.username,
+            role: user.role,
+        } as AccountJwt;
+        return {
+            accessToken: await this.jwtService.signAsync(payload),
+        };
     }
 }

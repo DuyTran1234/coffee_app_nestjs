@@ -16,10 +16,11 @@ const UserZodSchema = {
             (dateStr) => dayjs(dateStr, 'YYYY-MM-DD', true).isValid(),
             { message: 'Ngày tháng không hợp lệ' }
         )
-        .transform((val: string) => new Date(val)).optional(),
+        .transform((val: string) => new Date(val)),
 
     phoneNumber: z.string()
         .min(5, { message: 'Tối đa 5 ký tự' })
-        .max(15, { message: 'Tối đa 15 ký tự' })
-        .optional(),
+        .max(15, { message: 'Tối đa 15 ký tự' }),
 };
+
+export default UserZodSchema;
