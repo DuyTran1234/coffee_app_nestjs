@@ -6,7 +6,7 @@ export const CreateUserDtoRequestZodSchema = z.object({
     fullname: UserZodSchema.fullname,
     dob: UserZodSchema.dob.optional(),
     phoneNumber: UserZodSchema.phoneNumber.optional(),
-});
+}).strict();
 
 export class CreateUserDtoRequest
     extends (class { } as new () => z.infer<typeof CreateUserDtoRequestZodSchema>) { }

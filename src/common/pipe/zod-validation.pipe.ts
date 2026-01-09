@@ -10,12 +10,16 @@ export class ZodValidationPipe implements PipeTransform {
     transform(value: any, metadata: ArgumentMetadata) {
         try {
             const parsedValue = this.zodSchema.parse(value);
-            if (metadata.metatype) {
+            if (metadata.metatype && !this.isPrimitive(metadata.metatype)) {
                 return Object.assign(new (metadata.metatype)(), parsedValue);
             }
             return parsedValue;
         } catch (error) {
             throw new BadRequestException(error || 'ZodValidationPipe error');
         }
+    }
+
+    private isPrimitive(type: any): boolean {
+        return [String, Number, Boolean, Array].includes(type);
     }
 }

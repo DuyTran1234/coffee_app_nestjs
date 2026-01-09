@@ -27,6 +27,7 @@
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/typeorm": "^11.0.0",
+    "class-transformer": "^0.5.1",
     "dayjs": "^1.11.19",
     "nestjs-zod": "^5.1.0",
     "pg": "^8.16.3",

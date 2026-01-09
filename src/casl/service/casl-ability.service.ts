@@ -1,4 +1,4 @@
-import { AbilityBuilder, createMongoAbility, InferSubjects, MongoAbility } from "@casl/ability";
+import { AbilityBuilder, createMongoAbility, ExtractSubjectType, InferSubjects, MongoAbility } from "@casl/ability";
 import { Injectable } from "@nestjs/common";
 import { User } from "src/user/entity/user.entity";
 import { Action } from "../enum/action.enum";
@@ -23,5 +23,10 @@ export class CaslAbilityFactory {
         } else {
 
         }
+        return build({
+            detectSubjectType: (item) => {
+                return item.constructor as ExtractSubjectType<Subjects>;
+            }
+        });
     }
 }

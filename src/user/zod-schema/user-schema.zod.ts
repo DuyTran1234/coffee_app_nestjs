@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import z from "zod/v3";
 
 const UserZodSchema = {
+    id: z.coerce.number().min(1).max(100_000_000),
     username: z.string()
         .min(5, { message: 'Tối đa 5 ký tự' })
         .max(255, { message: 'Tối đa 255 ký tự' }),
