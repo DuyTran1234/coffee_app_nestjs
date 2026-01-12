@@ -4,8 +4,9 @@ import { User } from "src/user/entity/user.entity";
 import { Action } from "../enum/action.enum";
 import { AccountJwt } from "src/authentication/entity/account-jwt.entity";
 import { Role } from "../enum/role.enum";
+import { Employee } from "src/employee/entity/employee.entity";
 
-type Subjects = InferSubjects<typeof User> | 'all';
+type Subjects = InferSubjects<typeof User | typeof Employee> | 'all';
 
 export type AppAbility = MongoAbility<[Action, Subjects]>;
 
@@ -16,7 +17,8 @@ export class CaslAbilityFactory {
         if (accountJwt.role === Role.ADMIN) {
             can(Action.MANAGE, 'all');
         } else if (accountJwt.role === Role.EMPLOYEE) {
-
+            can(Action.READ, Employee);
+            can(Action.READ, User);
         } else if (accountJwt.role === Role.USER) {
             can(Action.READ, User, { id: accountJwt.id });
             can(Action.UPDATE, User, { id: accountJwt.id });

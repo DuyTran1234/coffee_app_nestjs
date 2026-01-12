@@ -7,8 +7,7 @@ import { Roles } from "src/common/decorator/role.decorator";
 import { ZodValidationPipe } from "src/common/pipe/zod-validation.pipe";
 import { ReadUserDtoRequestSchema } from "../dto/request/read-user.dto.request";
 import { UpdateUserDtoRequeset, UpdateUserDtoRequesetSchema } from "../dto/request/update-user.dto.request";
-import { ReadUserDtoResponse } from "../dto/response/read-user.dto.response";
-import { UpdateUserDtoResponse } from "../dto/response/update-user.dto.response";
+import { UserDtoResponse } from "../dto/response/user.dto.response";
 import { UserService } from "../service/user.service";
 
 @Controller('user')
@@ -22,10 +21,10 @@ export class UserController {
     @UseGuards(AuthenticationGuard)
     @UsePipes(new ZodValidationPipe(UpdateUserDtoRequesetSchema))
     async updateUser(@Req() req: Request,
-        @Body() updateUserDto: UpdateUserDtoRequeset): Promise<UpdateUserDtoResponse> {
+        @Body() updateUserDto: UpdateUserDtoRequeset): Promise<UserDtoResponse> {
         const accountJwt = req['accountJwt'] as AccountJwt;
         const updateUser = await this.userService.updateUser(accountJwt, updateUserDto);
-        return plainToInstance(UpdateUserDtoResponse, updateUser);
+        return plainToInstance(UserDtoResponse, updateUser);
     }
 
     @Get('get-user/:id')
@@ -33,9 +32,9 @@ export class UserController {
     @UseGuards(AuthenticationGuard)
     async getUser(@Req() req: Request,
         @Param('id', new ZodValidationPipe(ReadUserDtoRequestSchema)) id: number)
-        : Promise<ReadUserDtoResponse> {
+        : Promise<UserDtoResponse> {
         const accountJwt = req['accountJwt'] as AccountJwt;
         const getUser = await this.userService.getUserById(accountJwt, id);
-        return plainToInstance(ReadUserDtoResponse, getUser);
+        return plainToInstance(UserDtoResponse, getUser);
     }
 }

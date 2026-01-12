@@ -1,17 +1,21 @@
-import { BadRequestException, HttpException, Injectable, UnauthorizedException } from "@nestjs/common";
-import { UserService } from "src/user/service/user.service";
-import { CreateUserDtoRequest } from "src/user/dto/request/create-user.dto.request";
+import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import { HashServiceHelper } from "src/common/hash/hash-service";
+import { EmployeeAuthService } from "src/employee/service/employee-auth.service";
+import { CreateUserDtoRequest } from "src/user/dto/request/create-user.dto.request";
+import { UserAuthService } from "src/user/service/user-auth.service";
+import { EmployeeLoginDto } from "../dto/employee-login.dto";
 import { AccountJwt } from "../entity/account-jwt.entity";
 
 @Injectable()
 export class AuthenticationService {
     constructor(
-        private userService: UserService,
+        private userAuthService: UserAuthService,
+        private employeeAuthService: EmployeeAuthService,
         private jwtService: JwtService,
     ) { }
 
-    async handleZaloAccessToken(accessToken: string): Promise<{ username: string, fullname: string }> {
+    async handleZaloAccessToken(accessToken: string): Promise<CreateUserDtoRequest> {
         const res = await fetch('https://graph.zalo.me/v2.0/me', {
             method: 'GET',
             headers: {
@@ -32,9 +36,9 @@ export class AuthenticationService {
         };
     }
 
-    async loginUser(accessToken: string): Promise<{ accessToken: string }> {
-        const zaloUser = await this.handleZaloAccessToken(accessToken) as CreateUserDtoRequest;
-        const user = await this.userService.createUser(zaloUser);
+    async loginUser(zaloToken: string): Promise<{ accessToken: string }> {
+        const zaloUser = await this.handleZaloAccessToken(zaloToken);
+        const user = await this.userAuthService.createUserWithToken(zaloUser);
         if (!user) {
             throw new UnauthorizedException('login user error');
         }
@@ -45,6 +49,26 @@ export class AuthenticationService {
         } as AccountJwt;
         return {
             accessToken: await this.jwtService.signAsync(payload),
+        };
+    }
+
+    async loginEmployee(employeeLogin: EmployeeLoginDto): Promise<{ accessToken: string }> {
+        const employee = await this.employeeAuthService.getEmployeeByUsername(employeeLogin.username);
+        if (!employee) {
+            throw new UnauthorizedException('login employee error');
+        }
+        const checkPwd = await HashServiceHelper.compareHash(employeeLogin.pwd, employee.pwd);
+        if (!checkPwd) {
+            throw new UnauthorizedException('wrong password');
+        }
+        const payload = {
+            id: employee.id,
+            username: employee.username,
+            role: employee.role,
+        } as AccountJwt;
+        const token = await this.jwtService.signAsync(payload);
+        return {
+            accessToken: token,
         };
     }
 }
